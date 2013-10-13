@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "hsl.h"
 
@@ -73,3 +74,11 @@ void HSL2RGB(double h, double sl, double l, rgb_t *rgb)
     rgb->G = (uint8_t)(int)(g * 255.0f);
     rgb->B = (uint8_t)(int)(b * 255.0f);
 }
+
+void getRandColor(struct hsl *col)
+{
+    col->H = (rand() / (double)RAND_MAX) * colorRange + colorStart;
+    col->S = (rand() / (double)RAND_MAX) * 0.3 + 0.7;
+	col->L = brightness;
+}
+

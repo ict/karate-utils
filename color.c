@@ -14,6 +14,7 @@
 #include "util.h"
 #include "hsl.h"
 #include "serial.h"
+#include "options.h"
 
 #define DEFAULT_WAKEUP_SPEED (60*1000)
 
@@ -22,75 +23,13 @@ int showStaticWakeup(struct hsl *col, int devfd);
 void sigint_handler(int signum);
 
 static int run = 1;
-static char wakeupMode = 0;
-static double colorRange = 1.0;
-static double colorStart = 0.0;
-static double brightness = 0.5;
-static int speed = 1000;
-static int wakeupTime = DEFAULT_WAKEUP_SPEED; //ms
 static long startMillis;
+
+static karateoptions_t options;
 
 int main(int argc, char** argv)
 {
-    const char *devname = "/dev/ttyACM0";
-
-	//FIXME: parse arguments sanely
-    if (argc == 1)
-    {
-		printf("Using full range.\nHint: You can change the settings with %s\
-				[brightness] [speed] [mode] [wakeuptime-to-full-brightness]\n",
-        argv[0]);
-    }
-
-    if (argc >= 2)
-    {
-        brightness = atoi(argv[1]) / 200.0;
-    }
-
-    if (argc >= 3)
-    {
-        speed = atoi(argv[2]);
-    }
-
-    if (argc >= 4)
-    {
-        if (!strcmp(argv[3], "warm"))
-        {
-            colorRange = 0.2;
-            colorStart = 0;
-            printf("Using warm colors\n");
-        }
-        else if (!strcmp(argv[3], "cold"))
-        {
-            colorRange = 0.5;
-            colorStart = 0.22;
-            printf("Using cold colors\n");
-        }
-        else if (!strcmp(argv[3], "wakeup"))
-        {
-			wakeupMode = 1;
-            colorRange = 0.2;
-            colorStart = 0;
-			startMillis = currentTimeMillis();
-            printf("Wakeup-mode!\n");
-        }
-        else
-        {
-            printf("Color keyword not defined, \"warm\", \"cold\" and \"wakeup\" can be used\n");
-        }
-    }
-
-	if (argc >=  5)
-	{
-		if (strcmp(argv[3], "wakeup") != 0) 
-			printf("Warning: Ignoring wakeup-time parameter in non-wakeup mode");
-
-		wakeupTime = atoi(argv[4]) * 1000;
-		if (wakeupTime <= 0)
-			wakeupTime = DEFAULT_WAKEUP_SPEED;
-	}
-
-    printf("Settings used:\nSpeed: %u\nBrightness: %.2f\n", speed, (brightness*2));
+	getOptions(argc, argv, &options);
 
     struct sigaction newact;
     newact.sa_handler = sigint_handler;
@@ -98,7 +37,7 @@ int main(int argc, char** argv)
     newact.sa_flags = 0;
     sigaction(SIGINT, &newact, NULL);
 
-	dev_handle_t devfd = serialInit(devname);
+	dev_handle_t devfd = serialInit(options.device);
 	if (devfd < 0) {
 		exit(EXIT_FAILURE);
 	}
@@ -110,21 +49,25 @@ int main(int argc, char** argv)
     struct hsl *tmp;
 	struct hsl wakeupOrange;
 
+	//FIXME: Make option?
+	options.brightness = 200.0;
+
 	wakeupOrange.H = 32 / 255.0;
 	wakeupOrange.S = 0.8;
 	wakeupOrange.L = 0;
 
     srand(42);
-    getRandColor(curr, colorRange, colorStart, brightness);
+    getRandColor(curr, options.colorRange, options.colorStart, options.brightness);
 
-	if (wakeupMode)
+	if (options.wakeupTime)
 	{
+		options.wakeupTime *= 1000;
 		while(run && !showStaticWakeup(&wakeupOrange, devfd));
 		curr = &wakeupOrange;
 	}
 	while(run)
 	{
-		getRandColor(next, colorRange, colorStart, brightness);
+		getRandColor(next, options.colorRange, options.colorStart, options.brightness);
 		showGradient(curr, next, devfd);
 
 		tmp = curr;
@@ -145,10 +88,10 @@ int main(int argc, char** argv)
 inline int showStaticWakeup(struct hsl *col, int devfd) 
 {
 	long elapsed = currentTimeMillis() - startMillis;
-	if (elapsed > wakeupTime)
-		elapsed = wakeupTime;
-	double ratio = 1.0 - ((double)wakeupTime - elapsed) / wakeupTime;
-	col->L = brightness * ratio;
+	if (elapsed > options.wakeupTime)
+		elapsed = options.wakeupTime;
+	double ratio = 1.0 - ((double)options.wakeupTime - elapsed) / options.wakeupTime;
+	col->L = options.brightness * ratio;
 
 	struct rgb rgb = {0};
 	HSL2RGB(col->H, col->S, col->L, &rgb);
@@ -160,7 +103,7 @@ inline int showStaticWakeup(struct hsl *col, int devfd)
 
 void showGradient(struct hsl *col1, struct hsl *col2, int devfd)
 {
-    const int steps = (int) (fabs(col2->H - col1->H) * speed);
+    const int steps = (int) (fabs(col2->H - col1->H) * options.speed);
 
     struct rgb rgb = {0};
     double h = col1->H;

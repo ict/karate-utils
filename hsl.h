@@ -16,4 +16,4 @@ typedef struct hsl
 } hsl_t;
 
 void HSL2RGB(double h, double sl, double l, rgb_t *rgb);
-void getRandColor(struct hsl *res);
+void getRandColor(struct hsl *col, double colorRange, double colorStart, double brightness);

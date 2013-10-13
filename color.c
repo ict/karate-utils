@@ -7,9 +7,7 @@
 #include <math.h>
 
 #include <unistd.h>
-#include <termios.h>
 #include <regex.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <assert.h>
 
@@ -34,7 +32,6 @@ static long startMillis;
 
 int main(int argc, char** argv)
 {
-    char buf[128];
     const char *devname = "/dev/ttyACM0";
 
 	//FIXME: parse arguments sanely
@@ -118,7 +115,7 @@ int main(int argc, char** argv)
 	wakeupOrange.L = 0;
 
     srand(42);
-    getRandColor(curr);
+    getRandColor(curr, colorRange, colorStart, brightness);
 
 	if (wakeupMode)
 	{
@@ -127,7 +124,7 @@ int main(int argc, char** argv)
 	}
 	while(run)
 	{
-		getRandColor(next);
+		getRandColor(next, colorRange, colorStart, brightness);
 		showGradient(curr, next, devfd);
 
 		tmp = curr;
@@ -137,7 +134,9 @@ int main(int argc, char** argv)
 
     writeColor(0, 0, 0, devfd);
 
-    CLOSE_DEVICE(devfd);
+	
+
+    serialClose(devfd);
 
     return EXIT_SUCCESS;
 }

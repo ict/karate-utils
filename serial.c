@@ -10,6 +10,15 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
+#include <termios.h>
+#include <fcntl.h>
+#include <errno.h>
+
+#include "serial.h"
+
+// for various error messages
+static char buf[128];
 
 void writeColor(uint8_t r, uint8_t g, uint8_t b, dev_handle_t devfd) 
 {
@@ -54,10 +63,10 @@ void writeColor(uint8_t r, uint8_t g, uint8_t b, dev_handle_t devfd)
 
 
 dev_handle_t serialInit(const char *device) {
-    int devfd = OPEN_DEVICE(devname);
+    int devfd = OPEN_DEVICE(device);
     if (devfd == INVALID_DEV_HANDLE) {
         GET_SYS_ERR_MSG(buf);
-        fprintf(stderr, "could not open serial port device '%s': %s", devname, buf);
+        fprintf(stderr, "could not open serial port device '%s': %s", device, buf);
         return -1;
     }
 
@@ -70,10 +79,15 @@ dev_handle_t serialInit(const char *device) {
         tcflush(devfd, TCIOFLUSH);
     if (!ok) {
         GET_SYS_ERR_MSG(buf);
-        fprintf(stderr, "configuration of serial port device '%s' failed: %s", devname, buf);
+        fprintf(stderr, "configuration of serial port device '%s' failed: %s", device, buf);
         CLOSE_DEVICE(devfd);
         return -1;
     }
 
 	return devfd;
+}
+
+void serialClose(dev_handle_t handle) 
+{
+	CLOSE_DEVICE(handle);
 }

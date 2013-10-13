@@ -75,7 +75,7 @@ void HSL2RGB(double h, double sl, double l, rgb_t *rgb)
     rgb->B = (uint8_t)(int)(b * 255.0f);
 }
 
-void getRandColor(struct hsl *col)
+void getRandColor(struct hsl *col, double colorRange, double colorStart, double brightness)
 {
     col->H = (rand() / (double)RAND_MAX) * colorRange + colorStart;
     col->S = (rand() / (double)RAND_MAX) * 0.3 + 0.7;

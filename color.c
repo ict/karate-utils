@@ -11,6 +11,10 @@
 #include <regex.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <assert.h>
+
+#include "util.h"
+#include "hsl.h"
 
 typedef int dev_handle_t;
 typedef ssize_t dev_size_t;
@@ -24,9 +28,6 @@ typedef speed_t dev_speed_t;
 #define GET_SYS_ERR_MSG(buf) strerror_r(errno, buf, sizeof(buf))
 
 #define DEFAULT_WAKEUP_SPEED (60*1000)
-
-#include "hsl.c"
-#include "util.c"
 
 void writeColor(uint8_t r, uint8_t g, uint8_t b, int devfd);
 void showGradient(struct hsl *col1, struct hsl *col2, int devfd);
@@ -262,6 +263,8 @@ void getRandColor(struct hsl *col)
 
 void sigint_handler(int signum)
 {
+	// silence compiler
+	assert(signum == SIGINT);
     run = 0;
 }
 

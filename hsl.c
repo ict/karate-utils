@@ -1,19 +1,8 @@
-struct rgb
-{
-    uint8_t R;
-    uint8_t G;
-    uint8_t B;
+#include <stdint.h>
 
-};
+#include "hsl.h"
 
-struct hsl
-{
-    double H;
-    double S;
-    double L;
-};
-
-void HSL2RGB(double h, double sl, double l, struct rgb *rgb)
+void HSL2RGB(double h, double sl, double l, rgb_t *rgb)
 {
     double v;
     double r,g,b;

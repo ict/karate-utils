@@ -1,6 +1,9 @@
 #include <time.h>
+#include <math.h>
 
-static long currentTimeMillis() {
+#include "util.h"
+
+long currentTimeMillis() {
 	long ms;
 	struct timespec spec;
 

@@ -93,7 +93,7 @@ inline int showStaticWakeup(struct hsl *col, int devfd)
 	double ratio = 1.0 - ((double)options.wakeupTime - elapsed) / options.wakeupTime;
 	col->L = options.brightness * ratio;
 
-	struct rgb rgb = {0};
+	struct rgb rgb = {0, 0, 0};
 	HSL2RGB(col->H, col->S, col->L, &rgb);
 	writeColor(rgb.R, rgb.G, rgb.B, devfd);
 	usleep(50 * 1000);
@@ -105,7 +105,7 @@ void showGradient(struct hsl *col1, struct hsl *col2, int devfd)
 {
     const int steps = (int) (fabs(col2->H - col1->H) * options.speed);
 
-    struct rgb rgb = {0};
+    struct rgb rgb = {0, 0, 0};
     double h = col1->H;
     double s = col1->S;
     double l = col1->L;

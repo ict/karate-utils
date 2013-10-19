@@ -30,7 +30,7 @@ static struct argp_option options[] =
 		"Activate wakup mode: Slowly increase brightness in specified time (SECONDS)", 0},
 	{"color",   'c', "RGB", 0,
 		"For oneshot and onecolor modes: An RGB-Value in the form rrr:ggg:bbb", 0},
-	{0}
+	{0, 0, 0, 0, 0, 0}
 };
 
 

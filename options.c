@@ -7,6 +7,7 @@
 #include <argp.h>
 
 #include "options.h"
+#include "hsl.h"
 
 const char *argp_program_version = "color 0.1";
 
@@ -29,7 +30,7 @@ static struct argp_option options[] =
 	{"wakeup",   'w', "SECONDS", 0,
 		"Activate wakup mode: Slowly increase brightness in specified time (SECONDS)", 0},
 	{"color",   'c', "RGB", 0,
-		"For oneshot and onecolor modes: An RGB-Value in the form rrr:ggg:bbb", 0},
+		"For oneshot and onecolor modes: A Hex-RGB-Value in the form RRGGBB", 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -102,6 +103,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 				exit(EXIT_FAILURE);
 			}
 
+			break;
+
+		case 'c':
+			parseRGB(arg, &arguments->color);
 			break;
 
 		default:

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "hsl.h"
 
@@ -82,3 +83,34 @@ void getRandColor(struct hsl *col, double colorRange, double colorStart, double 
 	col->L = brightness;
 }
 
+
+static inline uint8_t parseHex(char *hex) { char *end;
+	int r  = strtol(hex, &end, 16);
+	if (*end != '\0' || r < 0 || r > 255) {
+		fprintf(stderr, "Invalid value: %s: Using 0 instead\n", hex);
+		return 0;
+	}
+	return (uint8_t) r;
+}
+
+void parseRGB(const char *str, rgb_t *res) {
+	int i = 0;
+
+	char col[3];
+	col[2] = '\0';
+
+	while (i < 6) {
+		col[i%2] = str[i]; i++;
+		col[i%2] = str[i]; i++;
+
+		uint8_t num = parseHex(col);
+		switch (i) {
+			case 2:
+				res->R = num; break;
+			case 4:
+				res->G = num; break;
+			case 6:
+				res->B = num; break;
+		}
+	}
+}

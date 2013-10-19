@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef struct rgb
 {
     uint8_t R;
@@ -17,3 +19,4 @@ typedef struct hsl
 
 void HSL2RGB(double h, double sl, double l, rgb_t *rgb);
 void getRandColor(struct hsl *col, double colorRange, double colorStart, double brightness);
+void parseRGB(const char *str, rgb_t *res);

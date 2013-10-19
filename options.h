@@ -1,3 +1,7 @@
+#pragma once
+
+#include "hsl.h"
+
 typedef enum {
 	ONESHOT,
 	ONECOLOR,
@@ -11,6 +15,7 @@ typedef struct {
 	double colorRange;
 	double colorStart;
 	char *device;
+	rgb_t color;
 
 	double brightness;
 } karateoptions_t;

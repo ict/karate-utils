@@ -20,6 +20,16 @@
 // for various error messages
 static char buf[128];
 
+void writeHSL(hsl_t *c, dev_handle_t devfd) {
+	rgb_t rc;
+	HSL2RGB(c->H, c->S, c->L, &rc);
+	writeColor(rc.R, rc.G, rc.B, devfd);
+}
+
+void writeRGB(rgb_t *c, dev_handle_t devfd) {
+	writeColor(c->R, c->G, c->B, devfd);
+}
+
 void writeColor(uint8_t r, uint8_t g, uint8_t b, dev_handle_t devfd) 
 {
     // xAA|x12|CX|24|Gt1|Bt1|Rt1|Gt2|Bt2|Rt2|Gr1|Br1|Rr1|Gr2|Br2|Rr2|Gl1|Bl1|Rl1|Gl2|Bl2|Rl2|Gb|Bb|Rb|Gb|Bb|Rb

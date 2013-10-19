@@ -33,6 +33,8 @@ void writeRGB(rgb_t *c, dev_handle_t devfd) {
 void writeColor(uint8_t r, uint8_t g, uint8_t b, dev_handle_t devfd) 
 {
     // xAA|x12|CX|24|Gt1|Bt1|Rt1|Gt2|Bt2|Rt2|Gr1|Br1|Rr1|Gr2|Br2|Rr2|Gl1|Bl1|Rl1|Gl2|Bl2|Rl2|Gb|Bb|Rb|Gb|Bb|Rb
+	
+	fprintf(stderr, "\t\tWrite: %d %d %d\n", r, g, b);
 
     char buf[128];
 

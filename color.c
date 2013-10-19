@@ -52,8 +52,7 @@ int main(int argc, char** argv)
 	switch (options.mode) {
 		case ONESHOT:
 			{
-				rgb_t c = options.color;
-				writeColor(c.R, c.G, c.B, devfd);
+				writeRGB(&options.color, devfd);
 				exit(EXIT_SUCCESS);
 			}
 		case ONECOLOR:
@@ -61,10 +60,10 @@ int main(int argc, char** argv)
 				hsl_t col;
 				RGB2HSL(&options.color, &col);
 				if (options.wakeupTime)  {
+					fprintf(stderr, "Starting wakeup. Color: %f %f %f\n", col.H, col.S, col.L);
 					while(run && showStaticWakeup(&col, devfd));
 				} else {
-					rgb_t c = options.color;
-					writeColor(c.R, c.G, c.B, devfd);
+					writeRGB(&options.color, devfd);
 				}
 
 				while (run) {
@@ -112,8 +111,6 @@ int main(int argc, char** argv)
 		curr = next;
 		next = tmp;
 	}
-
-    writeColor(0, 0, 0, devfd);
 	*/
 
 	// be sure to switch off the LEDs (if not ONESHOT-mode)
@@ -130,12 +127,10 @@ inline int showStaticWakeup(struct hsl *col, int devfd)
 	double ratio = 1.0 - ((double)options.wakeupTime - elapsed) / options.wakeupTime;
 	col->L = options.brightness * ratio;
 
-	struct rgb rgb = {0, 0, 0};
-	HSL2RGB(col->H, col->S, col->L, &rgb);
-	writeColor(rgb.R, rgb.G, rgb.B, devfd);
+	writeHSL(col, devfd);
 	usleep(50 * 1000);
 
-	return ratio >= 1.0;
+	return ratio < 1.0;
 }
 
 void showGradient(struct hsl *col1, struct hsl *col2, int devfd)

@@ -114,3 +114,61 @@ void parseRGB(const char *str, rgb_t *res) {
 		}
 	}
 }
+
+static inline double max(double a, double b) {
+	return a > b ? b : a;
+}
+static inline double min(double a, double b) {
+	return a < b ? a : b;
+}
+
+void RGB2HSL (rgb_t *rgb, hsl_t *hsl) {
+
+	double r = rgb->R/255.0;
+	double g = rgb->G/255.0;
+	double b = rgb->B/255.0;
+	double v;
+	double m;
+	double vm;
+	double r2, g2, b2;
+
+	hsl->H = 0; // default to black
+	hsl->S = 0;
+	hsl->L = 0;
+	v = max(r,g);
+	v = max(v,b);
+	m = min(r,g);
+	m = min(m,b);
+
+	hsl->L = (m + v) / 2.0;
+	if (hsl->L <= 0.0) {
+		return;
+	}
+
+	vm = v - m;
+	hsl->S = vm;
+
+	if (hsl->S > 0.0) {
+		hsl->S /= (hsl->L <= 0.5) ? (v + m ) : (2.0 - v - m) ;
+	} else {
+		return;
+	}
+
+	r2 = (v - r) / vm;
+	g2 = (v - g) / vm;
+	b2 = (v - b) / vm;
+
+	if (r == v) {
+		hsl->H = (g == m ? 5.0 + b2 : 1.0 - g2);
+	}
+
+	else if (g == v) {
+		hsl->H = (b == m ? 1.0 + r2 : 3.0 - b2);
+	}
+
+	else {
+		hsl->H = (r == m ? 3.0 + g2 : 5.0 - r2);
+	}
+
+	hsl->H /= 6.0;
+}

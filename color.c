@@ -22,26 +22,62 @@ void showGradient(struct hsl *col1, struct hsl *col2, int devfd);
 int showStaticWakeup(struct hsl *col, int devfd);
 void sigint_handler(int signum);
 
-static int run = 1;
+static volatile int run = 1;
 static long startMillis;
 
 static karateoptions_t options;
 
 int main(int argc, char** argv)
 {
+	// read options
 	getOptions(argc, argv, &options);
+	//FIXME: Make option?
+	options.brightness = 200.0;
 
+	// set up Ctrl-C handler
     struct sigaction newact;
     newact.sa_handler = sigint_handler;
     sigemptyset(&newact.sa_mask);
     newact.sa_flags = 0;
     sigaction(SIGINT, &newact, NULL);
 
+	// init the output
 	dev_handle_t devfd = serialInit(options.device);
 	if (devfd < 0) {
 		exit(EXIT_FAILURE);
 	}
 
+	// what are we supposed to do?
+	switch (options.mode) {
+		case ONESHOT:
+			{
+				rgb_t c = options.color;
+				writeColor(c.R, c.G, c.B, devfd);
+				exit(EXIT_SUCCESS);
+			}
+		case ONECOLOR:
+			{
+				// more or less the same as ONESHOT,
+				// but don't quit and reset it on exit
+				// FIXME: Make wakeup-mode usable here
+				rgb_t c = options.color;
+				writeColor(c.R, c.G, c.B, devfd);
+				while (run)
+					usleep(200*1000);
+				writeColor(0, 0, 0, devfd);
+				serialClose(devfd);
+
+				break;
+			}
+
+		case GRADIENT:
+			{
+				//TODO
+				break;
+			}
+	}
+	
+	/*
     struct hsl c1;
     struct hsl c2;
     struct hsl *curr = &c1;
@@ -49,8 +85,6 @@ int main(int argc, char** argv)
     struct hsl *tmp;
 	struct hsl wakeupOrange;
 
-	//FIXME: Make option?
-	options.brightness = 200.0;
 
 	wakeupOrange.H = 32 / 255.0;
 	wakeupOrange.S = 0.8;
@@ -76,11 +110,9 @@ int main(int argc, char** argv)
 	}
 
     writeColor(0, 0, 0, devfd);
+	*/
 
 	
-
-    serialClose(devfd);
-
     return EXIT_SUCCESS;
 }
 

@@ -5,7 +5,8 @@
 typedef enum {
 	ONESHOT,
 	ONECOLOR,
-	GRADIENT
+	GRADIENT,
+	TEST
 } color_mode_t;
 
 typedef struct {

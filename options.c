@@ -22,7 +22,7 @@ static struct argp_option options[] =
 	{"device", 'd', "DEVICE", 0,
 		"The serial device to be used for output. Default: /dev/ttyACM0", 0},
 	{"mode",   'm', "MODESTRING", 0,
-		"Select operation mode: oneshot, onecolor, gradient", 0},
+		"Select operation mode: oneshot, onecolor, gradient, test", 0},
 	{"preset",   'p', "PRESET", 0,
 		"Choose color gradient PRESET: warm, cold, full", 0},
 	{"speed",   's', "SPEED", 0,
@@ -96,6 +96,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 			else if (!strcmp(arg, "gradient"))
 			{
 				arguments->mode = GRADIENT;
+			}
+			else if (!strcmp(arg, "test"))
+			{
+				arguments->mode = TEST;
 			}
 			else 
 			{

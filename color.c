@@ -78,6 +78,15 @@ int main(int argc, char** argv)
 				//TODO
 				break;
 			}
+		case TEST:
+			{
+				fprintf(stderr, "Testing all channels with color (%d, %d, %d)\n", options.color.R, options.color.G, options.color.B);
+				for (uint8_t i = 0; i < 8; ++i) {
+					fprintf(stderr, "Channel %" PRIu8 "\n", i);
+					writeChannel(options.color.R, options.color.G, options.color.B, i, devfd);
+					usleep(5 * 1000 * 1000);
+				}
+			}
 	}
 	
 	/*

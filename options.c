@@ -80,8 +80,8 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 
 		case 'w':
-			arguments->wakeupTime = atoi(arg);
-			printf("Using wakeup mode with %d seconds delay\n", arguments->wakeupTime);
+			arguments->wakeupTime = atoi(arg) * 1000;
+			printf("Using wakeup mode with %d milliseconds delay\n", arguments->wakeupTime);
 			break;
 
 		case 'm':

@@ -33,7 +33,6 @@ int main(int argc, char** argv)
 	getOptions(argc, argv, &options);
 	//FIXME: Make option?
 	options.brightness = 200.0;
-	startMillis = currentTimeMillis();
 
 	// set up Ctrl-C handler
     struct sigaction newact;
@@ -47,6 +46,8 @@ int main(int argc, char** argv)
 	if (devfd < 0) {
 		exit(EXIT_FAILURE);
 	}
+
+	startMillis = currentTimeMillis();
 
 	// what are we supposed to do?
 	switch (options.mode) {

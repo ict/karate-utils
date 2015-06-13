@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "http.h"
+#include "colortypes.h"
 #include "color.h"
 #include "serial.h"
 
@@ -45,6 +46,19 @@ handleConnection(void *cls, struct MHD_Connection *connection,
 	}
 	else if (strcmp(url, "/orange") == 0) {
 		req.color = (rgb_t) {255,214,0};
+		req.type = ONE;
+	}
+
+	else if (strcmp(url, "/orange") == 0) {
+		req.color = (rgb_t) {255,214,0};
+		req.type = ONE;
+	}
+
+	else if (strstr(url, "/rgb") == url && strlen(url) >= 10) {
+		char buf[7];
+		buf[6] = '\0';
+		strncpy(buf, url+4, 6);
+		parseRGB(buf, &req.color);
 		req.type = ONE;
 	}
 

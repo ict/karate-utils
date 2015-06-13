@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=gnu99 -pedantic -Wall -Wextra
-LIBS = -lrt -lm
+LIBS = -lrt -lm -lmicrohttpd
 BINARY = color
 
 SOURCES = $(wildcard *.c)

@@ -22,7 +22,7 @@ static struct argp_option options[] =
 	{"device", 'd', "DEVICE", 0,
 		"The serial device to be used for output. Default: /dev/ttyACM0", 0},
 	{"mode",   'm', "MODESTRING", 0,
-		"Select operation mode: oneshot, onecolor, gradient, test", 0},
+		"Select operation mode: daemon, oneshot, onecolor, gradient, test", 0},
 	{"preset",   'p', "PRESET", 0,
 		"Choose color gradient PRESET: warm, cold, full", 0},
 	{"speed",   's', "SPEED", 0,
@@ -31,6 +31,8 @@ static struct argp_option options[] =
 		"Activate wakup mode: Slowly increase brightness in specified time (SECONDS)", 0},
 	{"color",   'c', "RGB", 0,
 		"For oneshot and onecolor modes: A Hex-RGB-Value in the form RRGGBB", 0},
+	{"httpport",   'o', "PORT", 0,
+		"For daemon mode, the port to listen on", 0},
 	{0, 0, 0, 0, 0, 0}
 };
 
@@ -101,6 +103,10 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 			{
 				arguments->mode = TEST;
 			}
+			else if (!strcmp(arg, "daemon"))
+			{
+				arguments->mode = DAEMON;
+			}
 			else 
 			{
 				fprintf(stderr, "Unknown mode: %s. Try --help\n", arg);
@@ -112,6 +118,9 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 		case 'c':
 			parseRGB(arg, &arguments->color);
 			break;
+
+		case 'o':
+			arguments->httpPort = atoi(arg);
 
 		default:
 			return ARGP_ERR_UNKNOWN;
@@ -141,10 +150,12 @@ void getOptions(int argc, char **argv, karateoptions_t *result)
 {
 	// defaults
 	result->device = "/dev/ttyACM0";
-	result->mode = GRADIENT;
+	result->devfd = -1;
+	result->mode = ONECOLOR;
 	result->wakeupTime = 0;
 	result->colorRange = 1.0;
 	result->colorStart = 0.0;
+	result->httpPort = 1338;
 
 	argp_parse (&argp, argc, argv, 0, 0, result);
 

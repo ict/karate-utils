@@ -15,6 +15,7 @@
 #include "color.h"
 #include "serial.h"
 #include "options.h"
+#include "http.h"
 
 #define DEFAULT_WAKEUP_SPEED (60*1000)
 
@@ -22,10 +23,11 @@ void showGradient(struct hsl *col1, struct hsl *col2, int devfd);
 void showStaticWakeup(struct hsl *col, int devfd);
 void sigint_handler(int signum);
 
-static volatile int run = 1;
 static long startMillis;
-
 static karateoptions_t options;
+
+volatile int run = 1;
+
 
 int main(int argc, char** argv)
 {
@@ -41,9 +43,11 @@ int main(int argc, char** argv)
     sigaction(SIGINT, &newact, NULL);
 
 	// init the output
-	dev_handle_t devfd = serialInit(options.device);
-	if (devfd < 0) {
-		exit(EXIT_FAILURE);
+	if (options.mode != DAEMON) {
+		options.devfd = serialInit(options.device);
+		if (options.devfd < 0) {
+			exit(EXIT_FAILURE);
+		}
 	}
 
 	startMillis = currentTimeMillis();
@@ -52,7 +56,7 @@ int main(int argc, char** argv)
 	switch (options.mode) {
 		case ONESHOT:
 			{
-				writeSingleRGB(&options.color, devfd);
+				writeSingleRGB(&options.color, options.devfd);
 				exit(EXIT_SUCCESS);
 			}
 		case ONECOLOR:
@@ -61,9 +65,9 @@ int main(int argc, char** argv)
 				RGB2HSL(&options.color, &col);
 				if (options.wakeupTime)  {
 					fprintf(stderr, "Starting wakeup. Color: %f %f %f\n", col.H, col.S, col.L);
-					showStaticWakeup(&col, devfd);
+					showStaticWakeup(&col, options.devfd);
 				} else {
-					writeSingleRGB(&options.color, devfd);
+					writeSingleRGB(&options.color, options.devfd);
 				}
 
 				while (run) {
@@ -83,9 +87,22 @@ int main(int argc, char** argv)
 				fprintf(stderr, "Testing all channels with color (%d, %d, %d)\n", options.color.R, options.color.G, options.color.B);
 				for (uint8_t i = 0; i < 8; ++i) {
 					fprintf(stderr, "Channel %" PRIu8 "\n", i);
-					writeSingleChannel(options.color.R, options.color.G, options.color.B, i, devfd);
+					writeSingleChannel(options.color.R, options.color.G, options.color.B, i, options.devfd);
 					usleep(5 * 1000 * 1000);
 				}
+			}
+
+		case DAEMON:
+			{
+
+				startHTTP(&options);
+
+				while (run) {
+					usleep(100 * 1000);
+				}
+
+				stopHTTP(&options);
+				break;
 			}
 	}
 	
@@ -124,7 +141,7 @@ int main(int argc, char** argv)
 
 	// be sure to switch off the LEDs (if not ONESHOT-mode)
 	rgb_t off = {0,0,0};
-    writeSingleRGB(&off, devfd);
+    writeSingleRGB(&off, options.devfd);
     return EXIT_SUCCESS;
 }
 

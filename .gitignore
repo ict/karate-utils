@@ -1,3 +1,6 @@
+# local stuff
+debug.c
+
 # Object files
 *.o
 *.ko

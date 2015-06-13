@@ -19,7 +19,7 @@
 #define DEFAULT_WAKEUP_SPEED (60*1000)
 
 void showGradient(struct hsl *col1, struct hsl *col2, int devfd);
-int showStaticWakeup(struct hsl *col, int devfd);
+void showStaticWakeup(struct hsl *col, int devfd);
 void sigint_handler(int signum);
 
 static volatile int run = 1;
@@ -31,8 +31,7 @@ int main(int argc, char** argv)
 {
 	// read options
 	getOptions(argc, argv, &options);
-	//FIXME: Make option?
-	options.brightness = 200.0;
+	options.brightness = 0.5; //default for HSL, goes from 0 (black) to 1 (white)
 
 	// set up Ctrl-C handler
     struct sigaction newact;
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
 				RGB2HSL(&options.color, &col);
 				if (options.wakeupTime)  {
 					fprintf(stderr, "Starting wakeup. Color: %f %f %f\n", col.H, col.S, col.L);
-					while(run && showStaticWakeup(&col, devfd));
+					showStaticWakeup(&col, devfd);
 				} else {
 					writeSingleRGB(&options.color, devfd);
 				}
@@ -130,18 +129,22 @@ int main(int argc, char** argv)
 }
 
 
-inline int showStaticWakeup(struct hsl *col, int devfd) 
+void showStaticWakeup(hsl_t *col, int devfd) 
 {
-	long elapsed = currentTimeMillis() - startMillis;
-	if (elapsed > options.wakeupTime)
-		elapsed = options.wakeupTime;
-	double ratio = 1.0 - ((double)options.wakeupTime - elapsed) / options.wakeupTime;
-	col->L = options.brightness * ratio;
+	double ratio;
+	options.brightness = col->S;
+	do {
+		long elapsed = currentTimeMillis() - startMillis;
+		if (elapsed > options.wakeupTime)
+			elapsed = options.wakeupTime;
+		ratio = 1.0 - ((double)options.wakeupTime - elapsed) / options.wakeupTime;
+		col->L = options.brightness * ratio;
 
-	writeSingleHSL(col, devfd);
-	usleep(50 * 1000);
+		writeSingleHSL(col, devfd);
+		/* fprintf(stderr, "Wrote %f %f %f\n", col->H, col->S, col->L); */
+		usleep(50 * 1000);
+	} while (run && ratio < 1.0);
 
-	return ratio < 1.0;
 }
 
 void showGradient(struct hsl *col1, struct hsl *col2, int devfd)

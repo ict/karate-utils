@@ -117,7 +117,7 @@ void parseRGB(const char *str, rgb_t *res) {
 }
 
 static inline double max(double a, double b) {
-	return a > b ? b : a;
+	return a > b ? a : b;
 }
 static inline double min(double a, double b) {
 	return a < b ? a : b;

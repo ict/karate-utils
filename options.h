@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hsl.h"
+#include "colortypes.h"
 
 typedef enum {
 	ONESHOT,

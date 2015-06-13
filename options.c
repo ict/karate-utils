@@ -7,7 +7,7 @@
 #include <argp.h>
 
 #include "options.h"
-#include "hsl.h"
+#include "colortypes.h"
 
 const char *argp_program_version = "color 0.1";
 

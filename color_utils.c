@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "hsl.h"
+#include "colortypes.h"
 
 void HSL2RGB(double h, double sl, double l, rgb_t *rgb)
 {
@@ -84,7 +84,8 @@ void getRandColor(struct hsl *col, double colorRange, double colorStart, double 
 }
 
 
-static inline uint8_t parseHex(char *hex) { char *end;
+static inline uint8_t parseHex(char *hex) { 
+	char *end;
 	int r  = strtol(hex, &end, 16);
 	if (*end != '\0' || r < 0 || r > 255) {
 		fprintf(stderr, "Invalid value: %s: Using 0 instead\n", hex);

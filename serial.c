@@ -16,76 +16,24 @@
 #include <errno.h>
 
 #include "serial.h"
+#include "colortypes.h"
+
 
 // for various error messages
 static char buf[128];
 
-void writeHSL(hsl_t *c, dev_handle_t devfd) {
-	rgb_t rc;
-	HSL2RGB(c->H, c->S, c->L, &rc);
-	writeColor(rc.R, rc.G, rc.B, devfd);
-}
-
-void writeRGB(rgb_t *c, dev_handle_t devfd) {
-	writeColor(c->R, c->G, c->B, devfd);
-}
-
-void writeColor(uint8_t r, uint8_t g, uint8_t b, dev_handle_t devfd) 
+void writeChannels(color_config_t *cfg, dev_handle_t devfd) 
 {
     // xAA|x12|CX|24|Gt1|Bt1|Rt1|Gt2|Bt2|Rt2|Gr1|Br1|Rr1|Gr2|Br2|Rr2|Gl1|Bl1|Rl1|Gl2|Bl2|Rl2|Gb|Bb|Rb|Gb|Bb|Rb
 	
-	fprintf(stderr, "\t\tWrite: %d %d %d\n", r, g, b);
-
-    char buf[128];
-
-    uint8_t data[28];
-    uint8_t *d = data;
-    uint8_t *crc_pos = data+2;
-
-    *d++ = 0xAA;
-    *d++ = 0x12;
-    d++; //data[2] is CRC
-    *d++ = 24;
-    for(int i = 0; i < 8; ++i)
-    {
-        *d++ = g;
-        *d++ = b;
-        *d++ = r;
-    }
-
-    uint8_t *v = data;
-    uint8_t crc = 0;
-    while (v < d)
-    {
-        if (v != crc_pos)
-            crc ^= *v;
-        ++v;
-    }
-    *crc_pos = crc;
-
-    int len = d - data;
-    if (len != 28)
-        fprintf(stderr, "len = %d\n", len);
-    int written = 0;
-    if (!WRITE_DATA(devfd, data, len, written) || !FLUSH_BUFFER(devfd)) {
-        GET_SYS_ERR_MSG(buf);
-        fprintf(stderr, "writing data to serial port failed: %s", buf);
-    }
-}
-
-void writeChannel(uint8_t r, uint8_t g, uint8_t b, uint8_t channel, dev_handle_t devfd) 
-{
-
-	if (channel > 7) {
-		fprintf(stderr, "Channel must be between 0 and 7. Got %d\n", channel);
-		return;
+	int numChannels = NUM_CHANNELS > 8 ? 8 : NUM_CHANNELS;
+	if (NUM_CHANNELS > 8) {
+		fprintf(stderr, "Warning: Only first 8 (of %d) channels will be output!\n", NUM_CHANNELS);
 	}
 
-	fprintf(stderr, "\t\tWrite: %d %d %d to channel %d\n", r, g, b, channel);
-
     char buf[128];
 
-    uint8_t data[28];
+    uint8_t data[28] = {0};
     uint8_t *d = data;
     uint8_t *crc_pos = data+2;
 
@@ -93,19 +41,14 @@ void writeChannel(uint8_t r, uint8_t g, uint8_t b, uint8_t channel, dev_handle_t
     *d++ = 0x12;
     d++; //data[2] is CRC
     *d++ = 24;
-    for(int i = 0; i < 8; ++i)
+    for(int i = 0; i < numChannels; ++i)
     {
-        if (i == channel) {
-			*d++ = g;
-			*d++ = b;
-			*d++ = r;
-		} else {
-			*d++ = 0;
-			*d++ = 0;
-			*d++ = 0;
-		}
+        *d++ = cfg->channel[i].G;
+        *d++ = cfg->channel[i].B;
+        *d++ = cfg->channel[i].R;
     }
 
+	// calculate CRC
     uint8_t *v = data;
     uint8_t crc = 0;
     while (v < d)

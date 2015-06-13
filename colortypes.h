@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+
+#define NUM_CHANNELS (8)
+
 typedef struct rgb
 {
     uint8_t R;
@@ -17,6 +20,11 @@ typedef struct hsl
     double S;
     double L;
 } hsl_t;
+
+typedef struct colorcfg
+{
+	rgb_t channel[NUM_CHANNELS];
+} color_config_t;
 
 void HSL2RGB(double h, double sl, double l, rgb_t *rgb);
 void RGB2HSL(rgb_t *rgb, hsl_t *hsl);
